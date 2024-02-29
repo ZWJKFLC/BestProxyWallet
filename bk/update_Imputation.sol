@@ -12,12 +12,12 @@ interface IERC20{
     function balanceOf(address account) external view returns (uint256);
     function transfer(address to, uint256 amount) external returns (bool);
 }
-contract Imputation {
+contract update_Imputation {
     address immutable public owner;
     WalletProxy public Proxycontract;
     constructor(address treasury){
         owner=treasury;
-        Proxycontract=new WalletProxy(address(new Walletlogic(treasury)));
+        Proxycontract=new WalletProxy(address(new Walletlogic(treasury,address(this))));
     }
     function clone(uint256 path) public returns (address instance) {
         address implementation=address(Proxycontract);
@@ -56,7 +56,7 @@ contract Imputation {
         unchecked{
             for (uint256 i; i<paths.length; i++) {
                 address n_add = getwalletadd(paths[i]);
-                if(n_add.code.length == 0){
+               if(isContract(n_add)){
                     clone(paths[i]);
                 }
                 Walletlogic(payable(n_add)).imputationtoken(token);
@@ -67,10 +67,21 @@ contract Imputation {
         unchecked{
             for (uint256 i; i<paths.length; i++) {
                 address n_add = getwalletadd(paths[i]);
-                if(n_add.code.length == 0){
+               if(isContract(n_add)){
                     clone(paths[i]);
                 }
                 Walletlogic(payable(n_add)).imputationeth();
+            }
+        }
+    }
+    function imputationall(uint256[] calldata paths,address add,bytes calldata a,uint256 _gas,uint256 _value)public {
+        unchecked{
+            for (uint256 i; i<paths.length; i++) {
+                address n_add = getwalletadd(paths[i]);
+               if(isContract(n_add)){
+                    clone(paths[i]);
+                }
+                Walletlogic(payable(n_add)).all(add,a,_gas,_value);
             }
         }
     }
@@ -78,8 +89,10 @@ contract Imputation {
 // The logical contract of the user's wallet
 contract Walletlogic{
     address immutable public treasury;
-    constructor(address _treasury) {
-        treasury=_treasury;
+    address immutable public imputation;
+    constructor(address _treasury,address _imputation) {
+        treasury = _treasury;
+        imputation = _imputation;
     }
     function imputationtoken(IERC20 token)public{
         token.transfer(treasury,token.balanceOf(address(this)));
@@ -88,7 +101,7 @@ contract Walletlogic{
         payable(treasury).transfer(address(this).balance);
     }
     function all(address add,bytes calldata a,uint256 _gas,uint256 _value)payable public {
-        require(msg.sender==treasury,"only owner");
+        require(msg.sender==imputation,"only imputation");
         unchecked {
             (bool success,) = add.call{gas: _gas,value: _value}(a);
             require(success,"error call");
