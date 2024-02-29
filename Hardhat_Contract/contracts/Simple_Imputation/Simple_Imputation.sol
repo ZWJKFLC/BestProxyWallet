@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-3.0
-
 pragma solidity >=0.8.2 <0.9.0;
 // @openzeppelin/contracts@4.9.3
 // @openzeppelin/contracts-upgradeable@4.9.3
@@ -7,15 +6,10 @@ import "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import "@openzeppelin/contracts-upgradeable/access/OwnableUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
-interface IERC20{
-    function balanceOf(address account) external view returns (uint256);
-    function transfer(address to, uint256 amount) external returns (bool);
-}
-contract Simple_Imputation is Ownable {
+import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+contract Simple_Imputation{
     WalletProxy public Proxycontract;
     constructor(address treasury){
-        transferOwnership(treasury);
         Proxycontract=new WalletProxy(address(new Walletlogic(treasury)));
     }
     function imputationtoken(uint256[] calldata paths,IERC20 token)public {
@@ -76,7 +70,7 @@ contract Walletlogic{
     }
 }
 // Variant proxy contract, which allows the smallest proxy contract to use this proxy contract to call the logical contract
-contract  WalletProxy is Initializable, Proxy, ERC1967Upgrade,Ownable {
+contract WalletProxy is Initializable, Proxy, ERC1967Upgrade{
     address  immutable public thisaddress=address(this);
     constructor(address _logic) payable {
         _disableInitializers();
