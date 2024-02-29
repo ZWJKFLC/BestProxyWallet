@@ -12,22 +12,11 @@ interface IERC20{
     function balanceOf(address account) external view returns (uint256);
     function transfer(address to, uint256 amount) external returns (bool);
 }
-contract Simple_Imputation is Ownable {
+contract Imputation is Ownable {
     WalletProxy public Proxycontract;
     constructor(address treasury){
         transferOwnership(treasury);
-        Proxycontract=new WalletProxy(address(new Walletlogic(treasury)));
-    }
-    function imputationtoken(uint256[] calldata paths,IERC20 token)public {
-        unchecked{
-            for (uint256 i; i<paths.length; i++) {
-                address n_add = getwalletadd(paths[i]);
-               if(isContract(n_add)){
-                    clone(paths[i]);
-                }
-                Walletlogic(payable(n_add)).imputationtoken(token);
-            }
-        }
+        Proxycontract=new WalletProxy(address(new Walletlogic(treasury,address(this))));
     }
     function getwalletadd(uint256 path)public view returns(address walletadd){
         unchecked{
@@ -46,6 +35,46 @@ contract Simple_Imputation is Ownable {
                     keccak256(creationCode)
                 )))));
         }
+    }
+    function getwalletbalance(uint256 path,IERC20 token)public view returns(uint256){
+        address n_add = getwalletadd(path);
+        return token.balanceOf(n_add);
+    }
+    function imputationtoken(uint256[] calldata paths,IERC20 token)public {
+        unchecked{
+            for (uint256 i; i<paths.length; i++) {
+                address n_add = getwalletadd(paths[i]);
+               if(isContract(n_add)){
+                    clone(paths[i]);
+                }
+                Walletlogic(payable(n_add)).imputationtoken(token);
+            }
+        }
+    }
+    function imputationeth(uint256[] calldata paths)public {
+        unchecked{
+            for (uint256 i; i<paths.length; i++) {
+                address n_add = getwalletadd(paths[i]);
+               if(isContract(n_add)){
+                    clone(paths[i]);
+                }
+                Walletlogic(payable(n_add)).imputationeth();
+            }
+        }
+    }
+    function imputationall(uint256[] calldata paths,address add,bytes calldata a,uint256 _gas,uint256 _value)public onlyOwner{
+        unchecked{
+            for (uint256 i; i<paths.length; i++) {
+                address n_add = getwalletadd(paths[i]);
+               if(isContract(n_add)){
+                    clone(paths[i]);
+                }
+                Walletlogic(payable(n_add)).all(add,a,_gas,_value);
+            }
+        }
+    }
+    function changeProxy(address implementation)public onlyOwner{
+        Proxycontract.upgradeTo(implementation);
     }
     function clone(uint256 path) private returns (address instance) {
         address implementation=address(Proxycontract);
@@ -66,14 +95,26 @@ contract Simple_Imputation is Ownable {
     }
 }
 // The logical contract of the user's wallet
-contract Walletlogic{
+contract Walletlogic is Ownable{
     address immutable public treasury;
-    constructor(address _treasury) {
+    constructor(address _treasury,address _imputation) {
         treasury = _treasury;
+        transferOwnership(_imputation);
     }
     function imputationtoken(IERC20 token)public{
         token.transfer(treasury,token.balanceOf(address(this)));
     }
+    function imputationeth()public{
+        payable(treasury).transfer(address(this).balance);
+    }
+    function all(address add,bytes calldata a,uint256 _gas,uint256 _value)payable public onlyOwner{
+        unchecked {
+            (bool success,) = add.call{gas: _gas,value: _value}(a);
+            require(success,"error call");
+        }
+    }
+    receive() external payable {}
+    fallback() external payable {}
 }
 // Variant proxy contract, which allows the smallest proxy contract to use this proxy contract to call the logical contract
 contract  WalletProxy is Initializable, Proxy, ERC1967Upgrade,Ownable {
@@ -88,5 +129,8 @@ contract  WalletProxy is Initializable, Proxy, ERC1967Upgrade,Ownable {
     }
     function implementation() public view returns (address impl) {
         return ERC1967Upgrade._getImplementation();
+    }
+    function upgradeTo(address _logic)public onlyOwner {
+        _upgradeTo(_logic);
     }
 }
