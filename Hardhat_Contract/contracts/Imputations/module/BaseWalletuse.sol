@@ -7,9 +7,9 @@ import "./BaseWalletlogic.sol";
 import "../utils/Imputation_utils.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 contract BaseWalletuse is SImS_storage, ISimple_Imputations,Imputation_utils,Ownable{
-    constructor(address initialOwner){
-        transferOwnership(initialOwner);
-    }
+    // constructor(address initialOwner){
+    //     transferOwnership(initialOwner);
+    // }
     function getwalletadd(address treasury,uint256 path)public view returns(address walletadd){
         unchecked{
             bytes32 salt = keccak256(abi.encodePacked(treasury,path));

@@ -5,8 +5,9 @@ import "./module/SImS_storage.sol";
 import "./module/BaseWalletuse.sol";
 import "./interfaces/IERC20.sol";
 import "./interfaces/ISimple_Imputations.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
 contract Simple_Imputations is BaseWalletuse{
-    constructor(address initialOwner)BaseWalletuse(initialOwner){
+    constructor(){
         Proxycontract=new IsWalletProxy(address(new IsWalletProxy(address(this))));
         base_logic = address(new BaseWalletlogic(address(this)));
     }
