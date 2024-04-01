@@ -10,6 +10,14 @@ contract BaseWalletuse is SImS_storage, ISimple_Imputations,Imputation_utils,Own
     constructor(address initialOwner){
         transferOwnership(initialOwner);
     }
+    function getethbalance(address treasury,uint256 path)public view returns(uint256 balance){
+        address sub_add = getwalletadd(treasury,path);
+        return sub_add.balance;
+    }
+    function gettokenbalance(address treasury,uint256 path,IERC20 token)public view returns(uint256 balance){
+        address sub_add = getwalletadd(treasury,path);
+        return token.balanceOf(sub_add);
+    }
     function getwalletadd(address treasury,uint256 path)public view returns(address walletadd){
         unchecked{
             bytes32 salt = keccak256(abi.encodePacked(treasury,path));
