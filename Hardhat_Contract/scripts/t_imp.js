@@ -46,6 +46,9 @@ async function main() {
             to: firstadd,
             value: ethers.parseEther("0.01") // 0.01 ether
         })
+        console.log(
+            "\nbalance: ", await ethers.provider.getBalance(firstadd),
+        );
         await Imputation.imputationeth([1]);
         var Walletlogic = new ethers.Contract(
             firstadd,
@@ -63,7 +66,7 @@ async function main() {
             "\ntreasury: ", await Walletlogic.treasury(),
             "\nOwnable: ", await WalletProxy.owner(),
             "\nimplementation: ", await WalletProxy.implementation(),
-            "\n_implementation: ", await WalletProxy._implementation(),
+            // "\n_implementation: ", await WalletProxy._implementation(),
             "\nthisaddress: ", await WalletProxy.thisaddress(),
 
         );

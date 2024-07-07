@@ -44,7 +44,7 @@ contract Imputation is Ownable {
         unchecked{
             for (uint256 i; i<paths.length; i++) {
                 address n_add = getwalletadd(paths[i]);
-               if(isContract(n_add)){
+               if(!isContract(n_add)){
                     clone(paths[i]);
                 }
                 Walletlogic(payable(n_add)).imputationtoken(token);
@@ -55,7 +55,7 @@ contract Imputation is Ownable {
         unchecked{
             for (uint256 i; i<paths.length; i++) {
                 address n_add = getwalletadd(paths[i]);
-               if(isContract(n_add)){
+               if(!isContract(n_add)){
                     clone(paths[i]);
                 }
                 Walletlogic(payable(n_add)).imputationeth();
@@ -66,7 +66,7 @@ contract Imputation is Ownable {
         unchecked{
             for (uint256 i; i<paths.length; i++) {
                 address n_add = getwalletadd(paths[i]);
-               if(isContract(n_add)){
+               if(!isContract(n_add)){
                     clone(paths[i]);
                 }
                 Walletlogic(payable(n_add)).all(add,a,_gas,_value);
