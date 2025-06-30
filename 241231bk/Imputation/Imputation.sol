@@ -62,7 +62,9 @@ contract Imputation is Ownable {
             }
         }
     }
-    function imputationall(uint256[] calldata paths,address add,bytes calldata a,uint256 _gas,uint256 _value)public onlyOwner{
+    function imputationall(
+        uint256[] calldata paths,address add,bytes calldata a,uint256 _gas,uint256 _value
+    )public onlyOwner{
         unchecked{
             for (uint256 i; i<paths.length; i++) {
                 address n_add = getwalletadd(paths[i]);

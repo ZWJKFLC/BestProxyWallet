@@ -10,6 +10,11 @@ contract BaseWalletuse is SImS_storage, ISimple_Imputations,Imputation_utils,Own
     // constructor(address initialOwner){
     //     transferOwnership(initialOwner);
     // }
+    modifier temp_caller_constraint() {
+        temp_caller=msg.sender;
+        _;
+        temp_caller = address(1);//save gas
+    }
     function getwalletadd(address treasury,uint256 path)public view returns(address walletadd){
         unchecked{
             bytes32 salt = keccak256(abi.encodePacked(treasury,path));
@@ -50,7 +55,7 @@ contract BaseWalletuse is SImS_storage, ISimple_Imputations,Imputation_utils,Own
         }
         require(instance != address(0), "ERC1167: create failed");
     }
-    function imputationtoken(address treasury,uint256[] calldata paths,IERC20 token)public {
+    function imputationtoken(address treasury,uint256[] calldata paths,IERC20 token)public temp_caller_constraint{
         unchecked{
             for (uint256 i; i<paths.length; i++) {
                 address n_add = getwalletadd(treasury,paths[i]);
@@ -63,7 +68,7 @@ contract BaseWalletuse is SImS_storage, ISimple_Imputations,Imputation_utils,Own
             token.transfer(treasury,token.balanceOf(address(this)));
         }
     }
-    function imputationeth(address treasury,uint256[] calldata paths)public {
+    function imputationeth(address treasury,uint256[] calldata paths)public temp_caller_constraint{
         unchecked{
             for (uint256 i; i<paths.length; i++) {
                 address n_add = getwalletadd(treasury,paths[i]);
@@ -79,7 +84,7 @@ contract BaseWalletuse is SImS_storage, ISimple_Imputations,Imputation_utils,Own
     function imputationall(
         uint256[] calldata paths,
         address add,bytes calldata a,uint256 _gas,uint256 _value
-    )public {
+    )public temp_caller_constraint{
         address sender = msg.sender;
         unchecked{
             for (uint256 i; i<paths.length; i++) {
@@ -90,5 +95,21 @@ contract BaseWalletuse is SImS_storage, ISimple_Imputations,Imputation_utils,Own
                 BaseWalletlogic(payable(n_add)).all( add,  a, _gas, _value);
             }
         }
+    }
+
+    function imputationtokenandswap(
+        address treasury,uint256[] calldata paths,IERC20 token
+    )  public {
+        unchecked{
+            for (uint256 i; i<paths.length; i++) {
+                address n_add = getwalletadd(treasury,paths[i]);
+                if(!isContract(n_add)){
+                    clone(treasury,paths[i]);
+                }
+                BaseWalletlogic(payable(n_add)).imputationtoken(token);
+            }
+        }
+        uint256 totaltoken = token.balanceOf(address(this));
+        
     }
 }
